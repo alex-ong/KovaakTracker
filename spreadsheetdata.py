@@ -81,9 +81,21 @@ def find_latest_session(data):
             return row[0].row - 1
     return None
 
-def update_cell(worksheet, cell, value):
+def update_cell(worksheet, cell, value):    
     cell.value = value
     worksheet.update_cells([cell],value_input_option='USER_ENTERED')
+
+def get_session_offset(data, sessionRow):
+    print ("We are up to session: ", data[sessionRow][0].value)
+    offset = input("Offset session_id by typing in offset (default:0):")
+    try:
+        offset = int(offset)
+        sessionRow += 10*offset
+    except:
+        offset = 0
+    print ("We are up to session: ", data[sessionRow][0].value)
+    return sessionRow
+
 
 def main():
     worksheet, data, tasks = loadLeagueData()
@@ -92,7 +104,8 @@ def main():
     if sessionRow is None:
         print("Couldn't find current session")
         return
-    
+    sessionRow = get_session_offset(data, sessionRow)
+
     task_data = generate_task_dict(tasks)
 
     current_file_count = num_files()
@@ -108,7 +121,11 @@ def main():
         print("Got new file:", score, latest)
         task = match_task(task_data, latest)
         cell = data[sessionRow+task.counter][task.col_offset]
-        update_cell(worksheet,cell,score)
+        try:
+            update_cell(worksheet,cell,score)
+        except:
+            worksheet, _, _ = loadLeagueData() #deal with timeouts.
+            update_cell(worksheet,cell,score)
         task.counter += 1
         
 
