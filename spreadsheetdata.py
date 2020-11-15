@@ -3,10 +3,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import json
 from util import modulePath
 from os.path import join
-from task import Task
+from task import Task, generate_task_dict, match_task
 import time
 from fileinfo import latest_file, num_files
-
+from challenge import get_score
 # sheet == worksheet
 # spreadsheets are composed of sheets
 scope = ["https://spreadsheets.google.com/feeds",
@@ -83,7 +83,7 @@ def find_latest_session(data):
 
 def update_cell(worksheet, cell, value):
     cell.value = value
-    worksheet.update_cells([cell])
+    worksheet.update_cells([cell],value_input_option='USER_ENTERED')
 
 def main():
     worksheet, data, tasks = loadLeagueData()
@@ -93,14 +93,10 @@ def main():
         print("Couldn't find current session")
         return
     
-    task_data = {}
-    for i, task in enumerate(tasks):
-        task_data[task] = Task(task,1+i*2)
-        
-    for task in task_data.values():
-        print(task)
+    task_data = generate_task_dict(tasks)
 
     current_file_count = num_files()
+    print ("Just play and let it rip")
     while True:
         file_count = num_files()
         if file_count == current_file_count:
@@ -108,9 +104,12 @@ def main():
         
         latest = latest_file()
         current_file_count = file_count
-        print("Got new file:", latest)
-        
-
+        score = get_score(latest)
+        print("Got new file:", score, latest)
+        task = match_task(task_data, latest)
+        cell = data[sessionRow+task.counter][task.col_offset]
+        update_cell(worksheet,cell,score)
+        task.counter += 1
         
 
 if __name__ == "__main__":
