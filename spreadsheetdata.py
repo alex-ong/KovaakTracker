@@ -1,19 +1,18 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
-from .util import modulePath
+from util import modulePath
 from os.path import join
+from task import Task
+import time
+from fileinfo import latest_file, num_files
 
 # sheet == worksheet
 # spreadsheets are composed of sheets
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/drive",
-]
+scope = ["https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive",]
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name(
-    join(modulePath(), "authentication.json"), scope
-)
+credentials = ServiceAccountCredentials.from_json_keyfile_name(join(modulePath(), "authentication.json"), scope)
 gc = gspread.authorize(credentials)
 
 
@@ -36,52 +35,24 @@ def safe_get_sheet(spreadsheet_id, sheet_id, first=True):
             return safe_get_sheet(spreadsheet_id, sheet_id, False)
 
 
-def getLeagueInfo(league):
+def getLeagueInfo():
     sheetID = None
     with open(join(modulePath(), "sheetinfo.json")) as f:
         data = json.load(f)
         spreadsheetID = data["spreadsheetID"]
-        sheetID = data[league]
-        gRange = data[league + "Range"]
-        pRange = data[league + "Players"]
-        dRange = data[league + "Dates"]
+        sheetID = data["sheetName"]
+        tasks = data["tasks"]
 
-    return (spreadsheetID, sheetID, gRange, pRange, dRange)
+    return (spreadsheetID, sheetID, tasks)
 
 
-def loadLeagueData(league):
-    spreadsheetID, sheetID, gRange, pRange, dRange = getLeagueInfo(league)
+def loadLeagueData():
+    spreadsheetID, sheetID, tasks = getLeagueInfo()
     sheet = safe_get_sheet(spreadsheetID, sheetID)
+    data = sheet.range(1,1,sheet.row_count + 1,sheet.col_count + 1)
+    data = SplitDatabaseRows(data)
+    return (sheet, data, tasks)
 
-    game_data = SplitDatabaseRows(sheet.range(gRange))
-    player_data = SplitDatabaseRows(sheet.range(pRange))
-    round_data = SplitDatabaseRows(sheet.range(dRange))
-
-    return (sheet, game_data, player_data, round_data)
-
-
-def getDiscordInfo():
-    with open(join(modulePath(), "sheetinfo.json")) as f:
-        data = json.load(f)
-        spreadsheetID = data["spreadsheetID"]
-        sheetID = data["playerlist"]
-        dRange = data["playerlist_discord"]
-    return (spreadsheetID, sheetID, dRange)
-
-
-def loadDiscordData():
-    spreadsheetID, sheetID, dRange = getDiscordInfo()
-    sheet = safe_get_sheet(spreadsheetID, sheetID)
-    discord_data = SplitDatabaseRows(sheet.range(dRange))
-
-    result = {}
-    for row in discord_data:
-        result[row[0].value.lower()] = row[1].value
-
-    return result
-
-
-# splits from a bunch of cells into lists of rows.
 def SplitDatabaseRows(fullData):
     if len(fullData) == 0:
         return []
@@ -101,7 +72,47 @@ def SplitDatabaseRows(fullData):
 
     return result
 
+def find_latest_session(data):
+    headerOffset = 1
+    for rowNum, row in enumerate(data):
+        if rowNum < headerOffset:
+            continue        
+        if row[0].value != '' and row[1].value == '':
+            return row[0].row - 1
+    return None
+
+def update_cell(worksheet, cell, value):
+    cell.value = value
+    worksheet.update_cells([cell])
+
+def main():
+    worksheet, data, tasks = loadLeagueData()
+    sessionRow = find_latest_session(data)
+
+    if sessionRow is None:
+        print("Couldn't find current session")
+        return
+    
+    task_data = {}
+    for i, task in enumerate(tasks):
+        task_data[task] = Task(task,1+i*2)
+        
+    for task in task_data.values():
+        print(task)
+
+    current_file_count = num_files()
+    while True:
+        file_count = num_files()
+        if file_count == current_file_count:
+            continue
+        
+        latest = latest_file()
+        current_file_count = file_count
+        print("Got new file:", latest)
+        
+
+        
 
 if __name__ == "__main__":
     # simple test
-    data = loadLeagueData("cc")
+    main()
