@@ -1,4 +1,6 @@
 import gspread
+import pyttsx3
+
 from oauth2client.service_account import ServiceAccountCredentials
 import json
 from util import modulePath
@@ -14,7 +16,7 @@ scope = ["https://spreadsheets.google.com/feeds",
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name(join(modulePath(), "authentication.json"), scope)
 gc = gspread.authorize(credentials)
-
+engine = pyttsx3.init()
 
 def refresh_credentials():
     global gc
@@ -96,11 +98,16 @@ def get_session_offset(data, sessionRow):
     print ("We are up to session: ", data[sessionRow][0].value)
     return sessionRow
 
-
+def say_print(s):
+    print(s)
+    engine.say(s)
+    engine.runAndWait()
+    
 def main():
+    
     worksheet, data, tasks = loadLeagueData()
     sessionRow = find_latest_session(data)
-
+    
     if sessionRow is None:
         print("Couldn't find current session")
         return
@@ -109,25 +116,30 @@ def main():
     task_data = generate_task_dict(tasks)
 
     current_file_count = num_files()
-    print ("Just play and let it rip")
-    while True:
-        file_count = num_files()
-        if file_count == current_file_count:
-            continue
-        
-        latest = latest_file()
-        current_file_count = file_count
-        score = get_score(latest)
-        print("Got new file:", score, latest)
-        task = match_task(task_data, latest)
-        cell = data[sessionRow+task.counter][task.col_offset]
-        try:
-            update_cell(worksheet,cell,score)
-        except:
-            worksheet, _, _ = loadLeagueData() #deal with timeouts.
-            update_cell(worksheet,cell,score)
-        task.counter += 1
-        
+    say_print ("Just play and let it rip")
+    try:
+        while True:
+            file_count = num_files()
+            if file_count == current_file_count:
+                continue
+            
+            latest = latest_file()
+            current_file_count = file_count
+            score = get_score(latest)
+            print("Got new file:", score, latest)
+            task = match_task(task_data, latest)
+            cell = data[sessionRow+task.counter][task.col_offset]
+            try:
+                update_cell(worksheet,cell,score)            
+                say_print(str(round(float(score))) + " on " + task.name)
+            except Exception as e:
+                say_print("error updating cell")                        
+                worksheet, _, _ = loadLeagueData() #deal with timeouts.
+                update_cell(worksheet,cell,score)
+                say_print(str(round(float(score))) + " on " + task.name)
+            task.counter += 1
+    finally:
+        say_print("All finished, have a good day")
 
 if __name__ == "__main__":
     # simple test
