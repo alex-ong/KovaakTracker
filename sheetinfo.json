@@ -1,13 +1,30 @@
 {
-    "spreadsheetID": "1IZ8t1jNg6Cw85QeSYbXEZtVV5xryC0bqA-oJg1SNHp4",
-    "sheetName": "Tammas-Sub-Intermediate-2",
-    "tasks": [
-        "Wide Wall 6Targets",
-        "Kindaclose Mid Strafes",
-        "1wall 6targets small",
-        "patTargetSwitch 360",
-        "Bounce 180 Sparky",
-        "air nuns easy",
-        "1wall5targets_pasu Reload"
+    "modules": [
+    {
+        "spreadsheetID": "1IZ8t1jNg6Cw85QeSYbXEZtVV5xryC0bqA-oJg1SNHp4",
+        "sheetName": "Tammas-Intermediate-2a",
+        "tasks": [
+            "Cata IC Long Strafes",
+            "1wall 6targets small",
+            "voxTargetSwitchClick",
+            "1wall5targets_pasu Reload",
+            "Thin Gauntlet",
+            "patTargetSwitch 360",
+            "1wall 1target"
+        ]
+    },
+    {
+        "spreadsheetID": "1IZ8t1jNg6Cw85QeSYbXEZtVV5xryC0bqA-oJg1SNHp4",
+        "sheetName": "Tammas-Intermediate-2b",
+        "tasks": [
+            "Cata IC Fast Strafes",
+            "1wall 6targets extra small",
+            "Microshot Speed 2targets",
+            "pasu small reload",
+            "Thin Gauntlet",
+            "Close Long Strafes Invincible",
+            "Close Fast Strafes Invincible"
+        ]
+    }
     ]
 }

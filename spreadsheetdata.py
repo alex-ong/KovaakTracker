@@ -41,10 +41,19 @@ def getLeagueInfo():
     sheetID = None
     with open(join(modulePath(), "sheetinfo.json")) as f:
         data = json.load(f)
+        for i, module in enumerate(data["modules"]):
+            print (i, ":", module["sheetName"])
+            
+        module_idx = input("Choose module number:")
+        try:
+            module_idx = int(module_idx)
+        except:
+            module_idx = 0
+        data = data["modules"][module_idx]
         spreadsheetID = data["spreadsheetID"]
         sheetID = data["sheetName"]
         tasks = data["tasks"]
-
+    
     return (spreadsheetID, sheetID, tasks)
 
 
@@ -133,7 +142,7 @@ def main():
                 update_cell(worksheet,cell,score)            
                 say_print(str(round(float(score))) + " on " + task.name)
             except Exception as e:
-                say_print("error updating cell")                        
+                say_print("error updating cell, trying again")                        
                 worksheet, _, _ = loadLeagueData() #deal with timeouts.
                 update_cell(worksheet,cell,score)
                 say_print(str(round(float(score))) + " on " + task.name)
