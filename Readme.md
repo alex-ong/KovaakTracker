@@ -27,14 +27,13 @@ Quick setup
 ===
 1) Get the following files from xeal:
 * authentication.json
-* sheetinfo.json
 2) Paste them in this folder.
 3) Run `pip install -r requirements.txt`
-4) Go to CTM Reporting, type `:redheart: setup reporting`
-5) Go to CTM CC,FC,CT1,CT2 channels. type 
-  * `:redheart: setup cc`
-  * `:redheart: setup fc`
-  * `:redheart: setup ct1`
-  * `:redheart: setup ct2`
-  
-6) Should all be good!
+4) Run `run.bat`
+
+Quick setup (pipenv)
+1) Get the following files from xeal:
+* authentication.json
+2) Paste them in this folder.
+3) Run `pipenv install`
+4) Run `run-pipenv.bat`

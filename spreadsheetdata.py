@@ -36,19 +36,24 @@ def safe_get_sheet(spreadsheet_id, sheet_id, first=True):
             refresh_credentials()
             return safe_get_sheet(spreadsheet_id, sheet_id, False)
 
-
+which_module = None
 def getLeagueInfo():
     sheetID = None
+    global which_module
     with open(join(modulePath(), "sheetinfo.json")) as f:
         data = json.load(f)
         for i, module in enumerate(data["modules"]):
             print (i, ":", module["sheetName"])
             
-        module_idx = input("Choose module number:")
-        try:
-            module_idx = int(module_idx)
-        except:
-            module_idx = 0
+        if which_module is not None:
+            module_idx = which_module
+        else:
+            module_idx = input("Choose module number:")
+            try:
+                module_idx = int(module_idx)
+            except:
+                module_idx = 0
+            which_module = module_idx
         data = data["modules"][module_idx]
         spreadsheetID = data["spreadsheetID"]
         sheetID = data["sheetName"]

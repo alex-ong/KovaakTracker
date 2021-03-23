@@ -15,7 +15,7 @@ class Task():
 
     def match_name(self, full_filename):
         name = ntpath.basename(full_filename)
-        return name.startswith(self.name)
+        return name.lower().startswith(self.name.lower())
 
 def generate_task_dict(task_names):
     task_data = {}
@@ -28,3 +28,9 @@ def match_task(dict, full_filename):
     for item in dict.values():
         if item.match_name(full_filename):
             return item
+    print("Couldn't find a match for " + full_filename)
+    
+    for item in dict.values():
+        print (item.name)
+    return None
+        
